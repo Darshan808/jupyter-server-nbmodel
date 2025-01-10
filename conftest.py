@@ -35,7 +35,8 @@ def jp_server_config(jp_root_dir,jp_server_config):
             'jpserver_extensions': {
                 'jupyter_server_ydoc': True,
                 'jupyter_server_fileid': True,
-                'jupyter_server_nbmodel': True
+                'jupyter_server_nbmodel': True,
+                'jupyter_events': True
             },
             'token': '',
             'password': '',
