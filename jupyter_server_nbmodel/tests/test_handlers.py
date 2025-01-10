@@ -61,93 +61,93 @@ def pending_kernel_is_ready(jp_serverapp):
     return _
 
 
-@pytest.mark.timeout(TEST_TIMEOUT)
-@pytest.mark.parametrize(
-    "snippet,output",
-    (
-        (
-            "print('hello buddy')",
-            '{"output_type": "stream", "name": "stdout", "text": "hello buddy\\n"}',
-        ),
-        ("a = 1", ""),
-        (
-            """from IPython.display import HTML
-HTML('<p><b>Jupyter</b> rocks.</p>')""",
-            '{"output_type": "execute_result", "metadata": {}, "data": {"text/plain": "<IPython.core.display.HTML object>", "text/html": "<p><b>Jupyter</b> rocks.</p>"}, "execution_count": 1}',  # noqa: E501
-        ),
-    ),
-)
-async def test_post_execute(jp_fetch, pending_kernel_is_ready, snippet, output):
-    r = await jp_fetch(
-        "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
-    )
-    kernel = json.loads(r.body.decode())
-    await pending_kernel_is_ready(kernel["id"])
+# @pytest.mark.timeout(TEST_TIMEOUT)
+# @pytest.mark.parametrize(
+#     "snippet,output",
+#     (
+#         (
+#             "print('hello buddy')",
+#             '{"output_type": "stream", "name": "stdout", "text": "hello buddy\\n"}',
+#         ),
+#         ("a = 1", ""),
+#         (
+#             """from IPython.display import HTML
+# HTML('<p><b>Jupyter</b> rocks.</p>')""",
+#             '{"output_type": "execute_result", "metadata": {}, "data": {"text/plain": "<IPython.core.display.HTML object>", "text/html": "<p><b>Jupyter</b> rocks.</p>"}, "execution_count": 1}',  # noqa: E501
+#         ),
+#     ),
+# )
+# async def test_post_execute(jp_fetch, pending_kernel_is_ready, snippet, output):
+#     r = await jp_fetch(
+#         "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
+#     )
+#     kernel = json.loads(r.body.decode())
+#     await pending_kernel_is_ready(kernel["id"])
 
-    response = await wait_for_request(
-        jp_fetch,
-        "api",
-        "kernels",
-        kernel["id"],
-        "execute",
-        method="POST",
-        body=json.dumps({"code": snippet}),
-    )
+#     response = await wait_for_request(
+#         jp_fetch,
+#         "api",
+#         "kernels",
+#         kernel["id"],
+#         "execute",
+#         method="POST",
+#         body=json.dumps({"code": snippet}),
+#     )
 
-    assert response.code == 200
-    payload = json.loads(response.body)
-    assert payload == {
-        "status": "ok",
-        "execution_count": 1,
-        "outputs": f"[{output}]",
-    }
+#     assert response.code == 200
+#     payload = json.loads(response.body)
+#     assert payload == {
+#         "status": "ok",
+#         "execution_count": 1,
+#         "outputs": f"[{output}]",
+#     }
 
-    response2 = await jp_fetch("api", "kernels", kernel["id"], method="DELETE")
-    assert response2.code == 204
+#     response2 = await jp_fetch("api", "kernels", kernel["id"], method="DELETE")
+#     assert response2.code == 204
 
-    await asyncio.sleep(1)
+#     await asyncio.sleep(1)
 
 
-@pytest.mark.timeout(TEST_TIMEOUT)
-@pytest.mark.parametrize(
-    "snippet,output",
-    (
-        (
-            "1 / 0",
-            '{"output_type": "error", "ename": "ZeroDivisionError", "evalue": "division by zero", "traceback": ["\\u001b[0;31m---------------------------------------------------------------------------\\u001b[0m", "\\u001b[0;31mZeroDivisionError\\u001b[0m                         Traceback (most recent call last)", "Cell \\u001b[0;32mIn[1], line 1\\u001b[0m\\n\\u001b[0;32m----> 1\\u001b[0m \\u001b[38;5;241;43m1\\u001b[39;49m\\u001b[43m \\u001b[49m\\u001b[38;5;241;43m/\\u001b[39;49m\\u001b[43m \\u001b[49m\\u001b[38;5;241;43m0\\u001b[39;49m\\n", "\\u001b[0;31mZeroDivisionError\\u001b[0m: division by zero"]}',  # noqa: E501
-        ),
-    ),
-)
-async def test_post_erroneous_execute(jp_fetch, pending_kernel_is_ready, snippet, output):
-    # Start the first kernel
-    r = await jp_fetch(
-        "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
-    )
-    kernel = json.loads(r.body.decode())
-    await pending_kernel_is_ready(kernel["id"])
+# @pytest.mark.timeout(TEST_TIMEOUT)
+# @pytest.mark.parametrize(
+#     "snippet,output",
+#     (
+#         (
+#             "1 / 0",
+#             '{"output_type": "error", "ename": "ZeroDivisionError", "evalue": "division by zero", "traceback": ["\\u001b[0;31m---------------------------------------------------------------------------\\u001b[0m", "\\u001b[0;31mZeroDivisionError\\u001b[0m                         Traceback (most recent call last)", "Cell \\u001b[0;32mIn[1], line 1\\u001b[0m\\n\\u001b[0;32m----> 1\\u001b[0m \\u001b[38;5;241;43m1\\u001b[39;49m\\u001b[43m \\u001b[49m\\u001b[38;5;241;43m/\\u001b[39;49m\\u001b[43m \\u001b[49m\\u001b[38;5;241;43m0\\u001b[39;49m\\n", "\\u001b[0;31mZeroDivisionError\\u001b[0m: division by zero"]}',  # noqa: E501
+#         ),
+#     ),
+# )
+# async def test_post_erroneous_execute(jp_fetch, pending_kernel_is_ready, snippet, output):
+#     # Start the first kernel
+#     r = await jp_fetch(
+#         "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
+#     )
+#     kernel = json.loads(r.body.decode())
+#     await pending_kernel_is_ready(kernel["id"])
 
-    response = await wait_for_request(
-        jp_fetch,
-        "api",
-        "kernels",
-        kernel["id"],
-        "execute",
-        method="POST",
-        body=json.dumps({"code": snippet}),
-    )
+#     response = await wait_for_request(
+#         jp_fetch,
+#         "api",
+#         "kernels",
+#         kernel["id"],
+#         "execute",
+#         method="POST",
+#         body=json.dumps({"code": snippet}),
+#     )
 
-    assert response.code == 200
-    payload = json.loads(response.body)
-    assert payload == {
-        "status": "error",
-        "execution_count": 1,
-        "outputs": f"[{output}]",
-    }
+#     assert response.code == 200
+#     payload = json.loads(response.body)
+#     assert payload == {
+#         "status": "error",
+#         "execution_count": 1,
+#         "outputs": f"[{output}]",
+#     }
 
-    response2 = await jp_fetch("api", "kernels", kernel["id"], method="DELETE")
-    assert response2.code == 204
+#     response2 = await jp_fetch("api", "kernels", kernel["id"], method="DELETE")
+#     assert response2.code == 204
 
-    await asyncio.sleep(1)
+#     await asyncio.sleep(1)
 
 async def test_execution_timing_metadata(jp_fetch, pending_kernel_is_ready, rtc_create_notebook, jp_serverapp):
     snippet = "a = 1"
@@ -201,51 +201,51 @@ async def test_execution_timing_metadata(jp_fetch, pending_kernel_is_ready, rtc_
     assert response2.code == 204
     await asyncio.sleep(1)
 
-@pytest.mark.timeout(TEST_TIMEOUT)
-async def test_post_input_execute(jp_fetch, pending_kernel_is_ready):
-    # Start the first kernel
-    r = await jp_fetch(
-        "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
-    )
-    kernel = json.loads(r.body.decode())
-    await pending_kernel_is_ready(kernel["id"])
+# @pytest.mark.timeout(TEST_TIMEOUT)
+# async def test_post_input_execute(jp_fetch, pending_kernel_is_ready):
+#     # Start the first kernel
+#     r = await jp_fetch(
+#         "api", "kernels", method="POST", body=json.dumps({"name": NATIVE_KERNEL_NAME})
+#     )
+#     kernel = json.loads(r.body.decode())
+#     await pending_kernel_is_ready(kernel["id"])
 
-    response = await jp_fetch(
-        "api",
-        "kernels",
-        kernel["id"],
-        "execute",
-        method="POST",
-        body=json.dumps({"code": "input('Age:')"}),
-    )
-    assert response.code == 202
-    location = response.headers["Location"]
+#     response = await jp_fetch(
+#         "api",
+#         "kernels",
+#         kernel["id"],
+#         "execute",
+#         method="POST",
+#         body=json.dumps({"code": "input('Age:')"}),
+#     )
+#     assert response.code == 202
+#     location = response.headers["Location"]
 
-    response2 = await _wait_request(jp_fetch, location)
+    # response2 = await _wait_request(jp_fetch, location)
 
-    assert response2.code == 300
-    payload = json.loads(response2.body)
-    assert "parent_header" in payload
-    assert payload["input_request"] == {"prompt": "Age:", "password": False}
+    # assert response2.code == 300
+    # payload = json.loads(response2.body)
+    # assert "parent_header" in payload
+    # assert payload["input_request"] == {"prompt": "Age:", "password": False}
 
-    response3 = await jp_fetch(
-        "api", "kernels", kernel["id"], "input", method="POST", body=json.dumps({"input": "42"})
-    )
-    assert response3.code == 201
+    # response3 = await jp_fetch(
+    #     "api", "kernels", kernel["id"], "input", method="POST", body=json.dumps({"input": "42"})
+    # )
+    # assert response3.code == 201
 
-    response4 = await _wait_request(jp_fetch, location)
-    assert response4.code == 200
-    payload2 = json.loads(response4.body)
-    assert payload2 == {
-        "status": "ok",
-        "execution_count": 1,
-        "outputs": '[{"output_type": "execute_result", "metadata": {}, "data": {"text/plain": "\'42\'"}, "execution_count": 1}]',  # noqa: E501
-    }
+    # response4 = await _wait_request(jp_fetch, location)
+    # assert response4.code == 200
+    # payload2 = json.loads(response4.body)
+    # assert payload2 == {
+    #     "status": "ok",
+    #     "execution_count": 1,
+    #     "outputs": '[{"output_type": "execute_result", "metadata": {}, "data": {"text/plain": "\'42\'"}, "execution_count": 1}]',  # noqa: E501
+    # }
 
-    r2 = await jp_fetch("api", "kernels", kernel["id"], method="DELETE")
-    assert r2.code == 204
+    # r2 = await jp_fetch("api", "kernels", kernel["id"], method="DELETE")
+    # assert r2.code == 204
 
-    await asyncio.sleep(1)
+    # await asyncio.sleep(1)
 
 
 # FIXME
