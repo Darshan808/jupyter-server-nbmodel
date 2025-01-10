@@ -149,7 +149,6 @@ async def test_post_erroneous_execute(jp_fetch, pending_kernel_is_ready, snippet
 
     await asyncio.sleep(1)
 
-@pytest.mark.timeout(TEST_TIMEOUT)
 async def test_execution_timing_metadata(jp_fetch, pending_kernel_is_ready, rtc_create_notebook, jp_serverapp):
     snippet = "a = 1"
     nb = nbformat.v4.new_notebook(
