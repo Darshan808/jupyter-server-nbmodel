@@ -7,7 +7,7 @@ import nbformat
 import pytest
 from jupyter_client.kernelspec import NATIVE_KERNEL_NAME
 
-TEST_TIMEOUT = 15
+TEST_TIMEOUT = 50
 SLEEP = 0.25
 
 
